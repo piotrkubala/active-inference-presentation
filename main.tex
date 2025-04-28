@@ -1,0 +1,679 @@
+% This example uses the 'minted' package, so you need to run the compiler with 
+% the '-shell-escape' option, i.e.
+% 	pdflatex -shell-escape example.tex
+% Additionally, you must have the 'pygmentize' program installed, which is part of 
+% the 'Pygments' package (https://pygments.org/)
+
+\documentclass[aspectratio=1610, english]{beamer} 
+% Jeśli chcesz otrzymać prezentację w języku polskim, to, powyżej, zamień „english” na „polish”
+\usepackage{babel}
+\usepackage{booktabs}
+\makeatletter
+\@ifclasswith{beamer}{english}{
+	% \usepackage{english}
+    % \usepackage[english]{babel}
+}
+
+\makeatother
+\usepackage[utf8]{inputenc}
+\usepackage{listings} % We want to put listings
+\usepackage{minted}   % We want to put listings
+
+\usepackage{csquotes}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\mode<beamer>{ 	% In the 'beamer' mode
+	\definecolor{links}{HTML}{2A1B81}
+	\hypersetup{
+		pdfpagemode=FullScreen,                 % Enable Full screen mode
+		colorlinks,
+		linkcolor=,
+		urlcolor=links
+	}
+	\usetheme[parttitle=rightfooter]{AGH}       % Show part title in right footer
+	%\usetheme[nosidebar]{AGH}                  % Do not show sidebar on non-title slides
+	%\usetheme[nosidebar, margins=1em]{AGH}     % Do not show sidebar on non-title slides and set both margins (left / right) to 1em
+	%\usetheme[dark]{AGH}                       % Use dark background
+	%\usetheme[dark, parttitle=leftfooter]{AGH} % Use dark background and show part title in left footer
+}
+\mode<handout>{	% In the 'handout' mode
+	\hypersetup{pdfpagemode=None}		
+	\usepackage{pgfpages}
+	\pgfpagesuselayout{4 on 1}[a4paper,border shrink=5mm,landscape]	% Show 4 slides on 1 page
+	\pgfpageslogicalpageoptions{1}{border code=\pgfusepath{stroke}}
+	\pgfpageslogicalpageoptions{2}{border code=\pgfusepath{stroke}}
+	\pgfpageslogicalpageoptions{3}{border code=\pgfusepath{stroke}}
+	\pgfpageslogicalpageoptions{4}{border code=\pgfusepath{stroke}}
+  	\usetheme{boxes}
+  	\addheadbox{structure}{\quad\insertpart\hfill\insertsection\hfill\insertsubsection\qquad}          % Content of header
+ 	\addfootbox{structure}{\quad\insertshortauthor\hfill\insertframenumber\hfill\insertsubtitle\qquad} % Content of footer
+}
+
+\AtBeginPart{ % At begin part: display its name
+	\frame{\partpage}
+} 
+\author[Piotr Kubala]{Piotr Kubala\newline
+   {\scriptsize \href{mailto:pkubala@student.agh.edu.pl}{pkubala@student.agh.edu.pl}}
+}
+\date{}
+\title{The Basics of Active Inference}
+\institute[AGH]{
+}
+%%%%%%%%%%% Configuration of the listings package %%%%%%%%%%%%%%%%%%%%%%%%%%
+% Source: https://en.wikibooks.org/wiki/LaTeX/Source_Code_Listings#Using_the_listings_package
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lstset{ %
+  backgroundcolor=\color{white},   % choose the background color
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{green},      % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,	                   % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  morekeywords={*,...},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{gray},   % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{cyan},        % string literal style
+  tabsize=2,	                   % sets default tabsize to 2 spaces
+  title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
+                                   % needed if you want to use UTF-8 Polish chars
+  literate={ą}{{\k{a}}}1
+           {Ą}{{\k{A}}}1
+           {ę}{{\k{e}}}1
+           {Ę}{{\k{E}}}1
+           {ó}{{\'o}}1
+           {Ó}{{\'O}}1
+           {ś}{{\'s}}1
+           {Ś}{{\'S}}1
+           {ł}{{\l{}}}1
+           {Ł}{{\L{}}}1
+           {ż}{{\.z}}1
+           {Ż}{{\.Z}}1
+           {ź}{{\'z}}1
+           {Ź}{{\'Z}}1
+           {ć}{{\'c}}1
+           {Ć}{{\'C}}1
+           {ń}{{\'n}}1
+           {Ń}{{\'N}}1
+}
+%%%%%%%%%%% Configuration of the minted package %%%%%%%%%%%%%%%%%%%%%%%%%%
+\setminted[C++]{frame=single,linenos}
+
+%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle
+
+\ifdefined\textleftmargin
+	%%%%%%%%%%%%%%%%
+
+\fi
+%%%%%%%%%%%%%%%%
+
+\begin{frame}{Table of contents}
+    \tableofcontents
+\end{frame}
+
+% Introduction
+\section{Core concepts}
+\begin{frame}{Core concepts}
+    \sectionpage
+\end{frame}
+
+\begin{frame}{Problem summary - What Is It That Brains Are Doing?}
+    \begin{block}{Main Question}
+        At the most general level, active inference addresses the fundamental question:
+        \begin{quote}
+            \textbf{What is it that brains (or agents) are doing?}
+        \end{quote}
+    \end{block}
+    
+    Any framework attempting to answer this must satisfy some requirements:
+    \begin{enumerate}
+        \item \textbf{Coping with Uncertainty:} It must explain how agents deal with incomplete, noisy, and ambiguous sensory information.
+        \item \textbf{Goal-Directedness:} It must account for the fact that agents act purposefully to maintain themselves within certain bounds (survival, homeostasis, task success).
+        \item \textbf{Adaptivity and Learning:} It must show how agents update their internal models of the world over time, adapting flexibly to changing environments.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{The Usefulness of Repeated Experience}
+  \begin{columns}[T] % align columns at the top
+    \begin{column}{0.6\textwidth}
+        \begin{block}{Enquiry concerning human understanding}
+              \begin{displayquote}
+                Custom, then, is the great guide of human life. It is that principle alone which renders our experience useful to us, and makes us expect, for the future, a similar train of events with those which have appeared in the past. \cite{hume2016enquiry}
+              \end{displayquote}   
+        \end{block}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{img/Painting_of_David_Hume.jpg}
+        \caption{David Hume}
+        \label{fig:david-hume-painting}
+      \end{figure}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Bayesian Brain
+\section{The Bayesian Brain Hypothesis}
+\begin{frame}{The Bayesian Brain Hypothesis}
+    \sectionpage
+\end{frame}
+\begin{frame}{The Brain as an Inference Engine}
+    \begin{block}{Core idea}
+        Active inference proposes a unified account of intelligent behaviour, integrating belief management, action selection, and learning into a single coherent process.
+    \end{block}
+
+  It suggests that the brain performs inference by continually updating and testing an internal model of the world against incoming observations.  
+  This ongoing process of prediction and correction enables the brain to sustain its structural and functional integrity over time, despite a volatile and uncertain environment.
+\end{frame}
+
+\begin{frame}{Bayes' Theorem - How To Incorporate Observations}
+    \begin{block}{Bayes' theorem}
+        \begin{equation}
+            P(s|o) = \frac{P(o|s)P(s)}{P(o)}
+        \end{equation}
+    \end{block}
+    where
+    \begin{description}
+        \item[$P(s|o)$] posterior probability (updated belief)
+        \item[$P(s)$] prior probability (initial belief)
+        \item[$P(o|s)$] likelihood (how likely the observation is under the given state)
+        \item[$P(o)$] evidence (normalization term).
+    \end{description}
+    
+    \vspace{0.5cm}
+    
+    \centering
+    \begin{tikzpicture}[>=stealth, node distance=6cm]
+        \node[circle,draw,minimum size=3.0cm] (prior) {Prior $P(s)$};
+        \node[circle,draw,minimum size=3.0cm,right of=prior] (posterior) {Posterior $P(s|o)$};
+        \draw[->] (prior) -- node[above]{Likelihood $\frac{P(o|s)}{P(o)}$} (posterior);
+    \end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{Perception as Inference}
+Suppose we have a model that assigns a probability $P(s)$ to each possible state $s$.
+A good model is one that assigns high probability to observations $o$ that are actually encountered, i.e., $P(o|s)$ is high on average when the true state is $s$.
+In this view, perception becomes the process of refining internal beliefs to minimize surprise about incoming sensory data.
+\end{frame}
+
+\begin{frame}{Information Content and Surprisal}
+
+To enable us to formalize the notion of surprisal, we can think of information content, as introduced by Claude Shannon.
+
+A measure of information content should satisfy three axioms, depending of a probability of an event occuring:
+\begin{enumerate}
+    \item \textbf{Continuity:} $I$ should vary smoothly with the probabilities.
+    \item \textbf{Monotonicity:} If an event becomes less probable, it should carry more information.
+    \item \textbf{Additivity:} Independent events should have additive information content.
+\end{enumerate}
+
+Under these principles, the information content (or \emph{surprisal}) associated with observing an event $o$ is given by:
+
+\begin{block}{Information content}
+    \begin{equation}
+        I(o) = -\log P(o)
+    \end{equation}
+\end{block}
+
+The less likely an event is under our model, the more surprising it is when it occurs.
+
+\end{frame}
+\begin{frame}{Expected Surprise and Entropy}
+
+Given a probability distribution $P(s)$ over states $s$, the \emph{expected surprise} quantifies the average amount of surprise we expect to experience upon observing a state drawn from $P$.
+
+The expected surprise is calculated as:
+
+\begin{block}{Entropy}
+    \begin{equation}
+        \mathbb{E}_{P}[-\   log P(s)] = - \sum_{s} P(s) \log P(s)
+    \end{equation}
+\end{block}
+
+This quantity is known as the \textbf{entropy} of the distribution $P$.
+
+\vspace{0.3cm}
+
+\begin{itemize}
+    \item High entropy $\rightarrow$ High expected surprise $\rightarrow$ Greater uncertainty.
+    \item Low entropy $\rightarrow$ Low expected surprise $\rightarrow$ More confident predictions.
+\end{itemize}
+\end{frame}
+\begin{frame}{Visualizing High vs. Low Entropy}
+
+\begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+        \begin{block}{Low Entropy Distribution}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                    ybar,
+                    ymin=0, ymax=1,
+                    xtick={1,2,3,4},
+                    xticklabels={$s_1$, $s_2$, $s_3$, $s_4$},
+                    width=5cm,
+                    height=4cm,
+                    bar width=8pt,
+                    ylabel={Probability}
+                ]
+                \addplot coordinates {(1,0.9) (2,0.03) (3,0.04) (4,0.03)};
+                \end{axis}
+            \end{tikzpicture}
+            \vspace{0.2cm}
+            \begin{itemize}
+                \item One dominant state.
+                \item Predictable outcome.
+            \end{itemize}
+        \end{block}
+    \end{column}
+    
+    \begin{column}{0.5\textwidth}
+        \begin{block}{High Entropy Distribution}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                    ybar,
+                    ymin=0, ymax=1,
+                    xtick={1,2,3,4},
+                    xticklabels={$s_1$, $s_2$, $s_3$, $s_4$},
+                    width=5cm,
+                    height=4cm,
+                    bar width=8pt,
+                    ylabel={Probability}
+                ]
+                \addplot coordinates {(1,0.25) (2,0.25) (3,0.25) (4,0.25)};
+                \end{axis}
+            \end{tikzpicture}
+            \vspace{0.2cm}
+            \begin{itemize}
+                \item Many equally likely states.
+                \item Uncertain outcome.
+            \end{itemize}
+        \end{block}
+    \end{column}
+\end{columns}
+
+\end{frame}
+\begin{frame}{Kullback–Leibler (KL) Divergence}
+Given two discrete distributions \(P(s)\) (the “true” or “target” distribution) and \(Q(s)\) (an approximate model), the KL–divergence of \(Q\) from \(P\) is
+\begin{block}{Definition}
+\[
+  D_{\mathrm{KL}}\bigl[P \,\|\, Q\bigr]
+  \;=\;\sum_{s} P(s)\,\log\frac{P(s)}{Q(s)}
+  \;=\;\mathbb{E}_{P}\bigl[\log P(s)-\log Q(s)\bigr].
+\]
+\end{block}
+
+\begin{itemize}
+\item \emph{Relative entropy:} extra surprise (information) when using \(Q\) instead of the true \(P\),
+\item \(\;D_{\mathrm{KL}}\ge0\), with equality iff \(P=Q\), 
+\item Asymmetric: generally \(D_{\mathrm{KL}}[P\|Q]\neq D_{\mathrm{KL}}[Q\|P]\).
+\end{itemize}
+
+\end{frame}
+\begin{frame}{Bayesian Surprise: Quantifying Belief Update}
+Bayesian surprise measures how much an observation forces us to revise our beliefs.  It is defined as the Kullback–Leibler divergence between posterior and prior distributions.
+\begin{block}{Definition}
+\[
+  \text{Surprise}(o)
+  \;=\;D_{\mathrm{KL}}\bigl[P(s\mid o)\,\|\,P(s)\bigr]
+  \;=\;\mathbb{E}_{P(\mid o)}\bigl[\log P(s\mid o)-\log P(s)\bigr].
+\]
+\end{block}
+
+\begin{itemize}
+  \item If observation \(o\) does not change our beliefs, \(P(s\mid o)=P(s)\) and surprise is zero.
+  \item Large surprise arises when \(P(s\mid o)\) differs substantially from \(P(s)\).
+  \item Bayesian surprise captures the \emph{information gain} or \emph{amount of updating} induced by \(o\).
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Active Inference Agent Summary}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/model_and_process.png}
+    \caption{Active inference agent and environment \footnote{Image source \cite{active-inference-book}}}
+    \label{fig:active-inference-agent}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Limitations of Passive Inference}
+Passive inference --- forming beliefs about hidden states based on observations --- is only part of intelligent behavior.  
+\medskip
+
+An intelligent agent must also act: influencing its environment to realize preferred outcomes, gather new information, and maintain internal order.
+
+\medskip
+
+Thus, any complete account must unify \textbf{perception} (belief updating) with \textbf{action} (world-changing).
+\end{frame}
+
+\begin{frame}{Unifying Perception and Action}
+Active inference postulates a single principle for both perception and action:
+\begin{itemize}
+    \item \textbf{Perception} minimizes surprise by updating beliefs about the world.
+    \item \textbf{Action} minimizes surprise by changing the world to align with beliefs.
+\end{itemize}
+
+\medskip
+
+Both are understood as minimizing a single quantity: \textbf{expected free energy}, which balances seeking preferred outcomes with reducing uncertainty.
+\end{frame}
+
+
+\section{Variational Inference and Variational Free Energy}
+\begin{frame}{Variational Inference and Variational Free Energy}
+    \sectionpage
+\end{frame}
+
+\begin{frame}{Intractability of Exact Bayesian Inference}
+    \begin{block}{Bayes' theorem}
+        \begin{equation}
+            P(s|o) = \frac{P(o|s)P(s)}{P(o)}
+        \end{equation}
+        \begin{equation}
+            P(o) = \sum_{s}{P(o|s)P(s)}
+        \end{equation}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Problems With Exact Bayesian Inference}
+\textbf{Problem:}  
+Computing the marginal likelihood \( P(o) \) requires summing over all possible hidden states \( s \).
+
+\medskip
+
+\begin{itemize}
+    \item For small or discrete systems, this sum is manageable.
+    \item For complex, continuous, or high-dimensional systems, the sum (or integral) becomes \textbf{intractable}.
+    \item Exact Bayesian inference becomes computationally prohibitive.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Variational Approximation: From Surprise to Free Energy}
+\textbf{Key idea:} Replace the true posterior \(P(s\mid o)\) with an approximate distribution \(Q(s)\).  
+
+\medskip
+
+\begin{itemize}
+  \item We cannot compute surprise \(-\ln P(o)\) exactly, so instead we derive an \emph{upper bound} on surprise, called the \textbf{variational free energy} \(F[Q,o]\).
+  \item Minimizing \(F[Q,o]\) with respect to \(Q\) makes \(Q(s)\) as close as possible to the true posterior.
+  \item This procedure is known as \textbf{variational inference}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Upper Bound}
+\centering
+\includegraphics[width=0.95\linewidth]{img/free_energy_bound.png}  
+Surprise upper bound \footnote{Image from \cite{active-inference-book}}
+\end{frame}
+
+\begin{frame}{Defining the Surprise Upper Bound}
+Assume we have an approximate posterior $Q(s)$ and a true posterior $P(s|o)$. Let us compute their KL-divergence.
+
+\begin{align*}
+D_{\mathrm{KL}}[Q(s)\|P(s\mid o)]
+&= \sum_{s}Q(s)\log\frac{Q(s)}{P(s\mid o)} \\
+&\overset{\text{(Bayes)}}{=} \sum_{s}Q(s)\log\frac{Q(s)\,P(o)}{P(o\mid s)\,P(s)} \\
+&= \sum_{s}Q(s)\bigl(\log Q(s) - \log P(s) + \log P(o) - \log P(o\mid s)\bigr) \\
+&= \underbrace{\sum_{s}Q(s)\log\frac{Q(s)}{P(s)} - \sum_{s}Q(s)\log P(o\mid s)}_{F[Q,o]}
+    \;+
+    \underbrace{\sum_{s}Q(s)\log P(o)}_{\log P(o)}
+\end{align*}
+\end{frame}
+
+\begin{frame}{Surprise bound}
+Since KL-divergence is nonnegative, we have found an upper bound of the surprise measure.
+\begin{block}{Surprise bound}
+    \begin{equation}
+        -\log P(o) = -D_{\mathrm{KL}}[Q(s)\|P(s\mid o)] + F[Q,o] \leq F[Q,o]
+    \end{equation}
+\end{block}
+
+\centering
+\includegraphics[width=0.55\linewidth]{img/free_energy_bound.png}  \\
+Surprise upper bound \footnote{Image from \cite{active-inference-book}}
+\end{frame}
+
+\begin{frame}{Variational Free Energy as an Optimization Objective}
+  \begin{block}{Variational free energy}
+     \centering
+        \begin{align*}
+          F[Q,o]
+          = \sum_{s}Q(s)\log\frac{Q(s)}{P(s)} \;-\;\sum_{s}Q(s)\log P(o\!\mid\!s) \\
+          = D_{\mathrm{KL}}\bigl[Q(s)\,\|\,P(s)\bigr] \;-\;\mathbb{E}_{Q(s)}\bigl[\log P(o\!\mid\!s)\bigr] \\
+          = D_{\mathrm{KL}}\bigl[Q(s)\,\|\,P(s\!\mid\!o)\bigr]\;-\;\log P(o)
+        \end{align*}
+  \end{block}
+
+  \begin{itemize}
+    \item Complexity: $D_{\mathrm{KL}}\bigl[Q(s)\,\|\,P(s)\bigr]$  
+    \item Accuracy: $\mathbb{E}_{Q(s)}\bigl[\log P(o\!\mid\!s)\bigr]$  
+    \item Minimizing \(F\) w.r.t.~\(Q \Rightarrow Q^*(s)\approx P(s\!\mid\!o)\)
+    \item Negative free energy (\(-F\)) is connected with another measure commonly used in the context of variational inference, the evidence lower bound (ELBO) on \(\ln P(o)\).
+  \end{itemize}
+\end{frame}
+
+
+\section{Expected Free Energy and Action}
+\begin{frame}{Expected Free Energy and Action}
+    \sectionpage
+\end{frame}
+
+\begin{frame}{Beyond Perception: The Need to Act and Plan}
+     \begin{block}{Belief-Updating Is Only Half the Story}
+    An agent that merely refines its internal model remains a passive observer.  
+    Without \emph{planning}, it cannot shape its future—nor test its hypotheses in the real world effectively.
+  \end{block}
+
+  \vspace{0.3cm}
+  \begin{itemize}
+    \item \textbf{Active Sampling:}  
+      Actions are the experiments by which an agent tests its model:  
+      perception and action form a continuous loop.
+    \item \textbf{Temporal Foresight:}  
+      Planning lets the agent anticipate downstream consequences,  
+      choosing action sequences rather than isolated moves.
+    \item \textbf{Goal-Directed Control:}  
+      To reach preferred states, the agent must weigh possible futures  
+      against its preferences and constraints.
+    \item \textbf{Uncertainty Resolution:}  
+      By simulating trajectories, the agent can select interventions  
+      that promise the greatest reduction in surprise before they occur.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Plans and Policies}
+  \begin{block}{From Plans to Policies}
+    To formalize planning, we introduce the concept of a \emph{policy} (\(\pi\)):  
+    a (possibly conditional) sequence of actions an agent can perform over time.
+  \end{block}
+
+  \begin{itemize}
+    \item A \textbf{plan} becomes a special case of a policy:  
+      a predefined sequence of intended actions without conditional branching.
+    \item A \textbf{policy}, more generally, allows for flexibility:  
+      actions can depend on intermediate observations.
+    \item The agent's fundamental task is to \emph{infer} the most appropriate policy  
+      at each time—balancing exploration and exploitation.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{An Agent's Task} 
+  \begin{block}{Key Question}
+    \centering
+    \emph{Given my beliefs about the environment, which policy will best minimize my future surprise?}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Expected Free Energy: Definition}
+    Let us define $Q(\tilde{s}, \tilde{o} | \pi)=Q(\tilde{s} | \pi) P(\tilde{o} | \tilde{s})$. Then the expected free energy can be defined in the following way.
+    \begin{block}{Expected Free Energy -- EFE}
+        \begin{align*}
+            G(\pi)=-\underbrace{\mathbb{E}_{Q(\tilde{s}, \tilde{o} | \pi)}[D_{\mathrm{KL}}[Q(\tilde{s}| \tilde{o}, \pi) \| Q(\tilde{s})]]}_{\text{Information gain}} - \underbrace{\mathbb{E}_{Q(\tilde{o}|\pi)}[\ln P(\tilde{o}|C)]}_{\text{Pragmatic value}}
+        \end{align*}
+    \end{block}
+
+    \begin{itemize}
+        \item \textbf{Epistemic value}: favors actions that \emph{reduce uncertainty} about the environment.
+        \item \textbf{Pragmatic value}: favors actions that \emph{achieve preferred states} (encoded in \(C\)).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Example: An Organism's Temperature}
+    \begin{columns}[T]
+        \begin{column}{0.5\textwidth}
+            Consider an organism whose survival depends on maintaining its internal temperature within a narrow range.
+
+            \vspace{0.3cm}
+        
+            On the one hand, it must perform actions that directly ensure its internal temperature remains within this range.  
+            On the other hand, it is uncertain which specific policies will best achieve this over time and in changing conditions.
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \centering
+                \includegraphics[width=1.0\linewidth]{img/active_inference_agent.png}
+                \caption{Agent mantaining body temperature}
+                \label{fig:active-inference-agent}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Example: An Organism's Temperature}
+    \begin{columns}[T]
+        \begin{column}{0.5\textwidth}
+            Thus, the organism faces the classic \textbf{explore-exploit dilemma}:  
+            it must \emph{exploit} known strategies that are likely to maintain homeostasis, while simultaneously \emph{exploring} to reduce uncertainty about better or more reliable policies.
+        
+            \vspace{0.4cm}
+        
+            Both tendencies are unified under the drive to \textbf{minimize expected free energy}.
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \centering
+                \includegraphics[width=1.0\linewidth]{img/active_inference_agent.png}
+                \caption{Agent mantaining body temperature}
+                \label{fig:active-inference-agent}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Epistemic Value: Reducing Uncertainty}
+    \begin{block}{Information gain}
+        \begin{equation}
+            \mathbb{E}_{Q(\tilde{s}, \tilde{o} | \pi)}[D_{\mathrm{KL}}[Q(\tilde{s}| \tilde{o}, \pi) \| Q(\tilde{s})]]
+        \end{equation}
+    \end{block}
+
+    The first component of the expected free energy rewards policies that are expected to \textbf{reduce uncertainty} about the hidden states of the environment.
+
+    \vspace{0.3cm}
+
+    It measures the \emph{expected information gain}: how much an agent expects to learn by executing a policy.
+
+    \vspace{0.3cm}
+
+    Thus, even actions whose immediate outcomes are uncertain may be valuable, if they are expected to make the world more predictable in the future.
+
+\end{frame}
+
+\begin{frame}{Pragmatic Value: Achieving Outcomes}
+    \begin{block}{Pragmatic value}
+        \begin{equation}
+            \mathbb{E}_{Q(\tilde{o}|\pi)}[\ln P(\tilde{o}|C)]
+        \end{equation}
+    \end{block}
+
+    The second component of the expected free energy favors policies that are likely to bring about \textbf{preferred outcomes}.
+
+    \vspace{0.3cm}
+
+    Here, \(C\) represents prior preferences over observations:  
+    a specification of what states of the world the agent \emph{desires} or \emph{expects} to encounter.
+
+    \vspace{0.3cm}
+
+    In this way, the agent does not merely seek to learn, but actively strives to realize \emph{valued goals}.
+\end{frame}
+
+\begin{frame}{Policies as Plans to Minimize EFE}
+    \begin{block}{Policy inference}
+        Selecting a policy is treated as a problem of inference — the agent infers which policy is most likely to minimize EFE.
+    \end{block}
+    
+    The task solved by an active inference agent, besides refining its generative model of the environment, is the selection of actions over time.
+    
+    \vspace{0.3cm}
+    
+    By evaluating and comparing the expected free energy (EFE) of different \emph{policies} — sequences of actions — the agent can estimate their effectiveness and choose the most promising one.
+\end{frame}
+
+
+\section{Building Active Inference Models}
+\begin{frame}{Building Active Inference Models}
+    \sectionpage
+\end{frame}
+
+\begin{frame}{What is A Generative Model?}
+    
+\end{frame}
+
+\begin{frame}{Discrete Generative Models}
+
+\end{frame}
+
+\begin{frame}{Model Components: Matrix Formulation}
+
+\end{frame}
+
+\frame{Posterior Belief Updating}
+\frame{Policy Evaluation and Selection}
+\frame{Simulated Agent Setup}
+\frame{Exploring Agent Dynamics}
+
+% Factor Graphs and Implementation
+\section{Factor Graphs and Implementation}
+\frame{Why Factor Graphs?}
+\frame{Structure and Semantics}
+\frame{Message Passing Algorithms}
+\frame{Software and Computational Frameworks}
+
+
+\section{Conclusion and Outlook}
+\begin{frame}{Conclusion and Outlook}
+    \sectionpage
+\end{frame}
+
+\frame{Recap: Core Ideas}
+\frame{What Active Inference Explains}
+\frame{Future Directions and Open Questions}
+\frame{Questions and Discussion}
+
+\begin{frame}{Bibliography}
+\bibliography{bibliography}{}
+\bibliographystyle{plain}
+\end{frame}
+
+\end{document}

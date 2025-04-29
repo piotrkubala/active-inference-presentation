@@ -636,8 +636,90 @@ Surprise upper bound \footnote{Image from \cite{active-inference-book}}
     \sectionpage
 \end{frame}
 
-\begin{frame}{What is A Generative Model?}
-    
+\begin{frame}{What is a Generative Model?}\textbf{Definition} 
+    \begin{block}{Definition}
+          A generative model is a \emph{probabilistic} framework that 
+          defines a \emph{joint distribution} \(p(x, z)\) over 
+          \begin{itemize}
+            \item \(x\): observed data,
+            \item \(z\): latent (hidden) variables.
+          \end{itemize}
+    \end{block}
+    \begin{itemize}
+        \item \emph{Likelihood Evaluation:} Compute \(p(x)\) to assess how probable an observation is:
+              \[
+                p(x) \;=\;\int p(z)\,p(x\mid z)\,\mathrm{d}z
+              \]
+        \item \emph{Sampling:} Generate new data by 
+              \[
+                z\sim p(z),\quad x\sim p(x\mid z).
+              \]
+        \item Generative: models \(p(x, y)\) or \(p(x, z) \Rightarrow\) can simulate data  
+        \item Discriminative: models \(p(y\mid x) \Rightarrow\) only predicts labels
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Generative Model Factorization}
+  Consider a generative model 
+  \[
+    p(x_1, x_2, x_3, \dots, x_n).
+  \]
+  Often, this joint distribution can be decomposed into simpler factors:
+  \[
+    p(x_1, x_2, \dots, x_n)
+      \;=\;\prod_{f=1}^F \phi_f\bigl(x_{f(1)},\,x_{f(2)},\,\dots\bigr),
+  \]
+  where each factor \(\phi_f\) depends only on a small subset of the variables.  
+
+  \medskip
+  
+  \begin{itemize}
+    \item We will focus on the case, where each factor is a conditional \(P(x_j\!\mid x_k)\).  
+    \item  The factorization encodes conditional‐independence: if no factor links \(x_i\) and \(x_j\), then 
+      \[
+        x_i \;\perp\; x_j 
+        \;\bigm|\;
+        \text{(the variables they both connect to)}.
+      \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Graphical Models Representation}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.75\linewidth]{img/graphical_models.png}
+        \caption{Graphical models examples \footnote{Image source \cite{active-inference-book}}}
+        \label{fig:graphical-model-example}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Graphical Models Semantics}
+  A factor-graph style graphical model comprises two kinds of nodes and edges that encode dependencies and conditional independencies:
+  \begin{itemize}
+    \item \textbf{Variable-nodes} (◯)  
+      \begin{itemize}
+        \item Each represents a random variable \(x_i\).
+      \end{itemize}
+    \item \textbf{Factor-nodes} (⬛)  
+      \begin{itemize}
+        \item Each of them represents a local factor \(\phi_f\bigl(x_{f(1)},\dots\bigr)\), that is a conditional \(P(x_j\mid x_k)\).  
+        \item Connects exactly to the variables on which it depends.  
+      \end{itemize}
+    \item \textbf{Edges}  
+      \begin{itemize}
+        \item An edge between a factor and a variable means that the variable appears as an argument of that factor.  
+        \item Absence of a path (given conditioning) $\Rightarrow$ conditional independence.
+        \item When an edge is directed [CONTINUE HERE]
+      \end{itemize}
+    \item \textbf{Conditional-independence}  
+      \[
+        x_i \;\perp\; x_j 
+        \;\bigm|\;
+        \mathcal{S}
+        \quad\Longleftrightarrow\quad
+        \text{all paths between \(x_i\) and \(x_j\) are goes through }\mathcal{S}.
+      \]
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Discrete Generative Models}
@@ -652,14 +734,6 @@ Surprise upper bound \footnote{Image from \cite{active-inference-book}}
 \frame{Policy Evaluation and Selection}
 \frame{Simulated Agent Setup}
 \frame{Exploring Agent Dynamics}
-
-% Factor Graphs and Implementation
-\section{Factor Graphs and Implementation}
-\frame{Why Factor Graphs?}
-\frame{Structure and Semantics}
-\frame{Message Passing Algorithms}
-\frame{Software and Computational Frameworks}
-
 
 \section{Conclusion and Outlook}
 \begin{frame}{Conclusion and Outlook}

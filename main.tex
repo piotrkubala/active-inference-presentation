@@ -700,16 +700,21 @@ Surprise upper bound \footnote{Image from \cite{active-inference-book}}
       \begin{itemize}
         \item Each represents a random variable \(x_i\).
       \end{itemize}
-    \item \textbf{Factor-nodes} (⬛)  
+    \item \textbf{Factor-nodes} ($\Box$)
       \begin{itemize}
         \item Each of them represents a local factor \(\phi_f\bigl(x_{f(1)},\dots\bigr)\), that is a conditional \(P(x_j\mid x_k)\).  
         \item Connects exactly to the variables on which it depends.  
       \end{itemize}
-    \item \textbf{Edges}  
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Graphical Models Semantics}
+    \begin{itemize}
+        \item \textbf{Edges}  
       \begin{itemize}
         \item An edge between a factor and a variable means that the variable appears as an argument of that factor.  
         \item Absence of a path (given conditioning) $\Rightarrow$ conditional independence.
-        \item When an edge is directed [CONTINUE HERE]
+        \item A directed edge into a factor-node indicates the factor is a conditional distribution whose children are the variables on its outgoing edges.
       \end{itemize}
     \item \textbf{Conditional-independence}  
       \[
@@ -719,31 +724,253 @@ Surprise upper bound \footnote{Image from \cite{active-inference-book}}
         \quad\Longleftrightarrow\quad
         \text{all paths between \(x_i\) and \(x_j\) are goes through }\mathcal{S}.
       \]
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Partially Observable Markov Decision Process -- POMDP}
+    \begin{figure}
+        \centering
+        \includegraphics[width=1.0\linewidth]{img/pomd_graphical_model.png}
+        \caption{POMDP \footnote{Image source \cite{active-inference-book}}}
+        \label{fig:pomd}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{POMDP in Active Inference}
+  \textbf{Dynamic generative model:} Partially-Observable Markov Decision Process (POMDP)
+  \[
+    p(s_{1:T},o_{1:T},\pi)
+      \;=\; p(\pi)\,\prod_{t=1}^T p(s_t \mid s_{t-1},\pi)\,p(o_t\mid s_t)
+  \]
+  \medskip
+  \begin{itemize}
+    \item \(\mathbf{s_t}\): hidden state at time \(t\)  
+    \item \(\mathbf{o_t}\): observation, depends only on \(s_t\)  
+    \item \(\boldsymbol\pi\): policy (sequence of actions), indexes alternative state‐trajectories  
+    \item \textbf{Transition model:} \(p(s_t\mid s_{t-1},\pi)\) couples states across time under a chosen policy  
+    \item \textbf{Observation model:} \(p(o_t\mid s_t)\) specifies how states generate sensory data  
+    \item \textbf{Prior over policies:} \(p(\pi)\) encodes preferences (via expected free energy)  
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Discrete Generative Models}
-
+\begin{frame}{Inference in POMDP}
+    \begin{block}{Policy selection}
+        Action selection is just inference over \(\pi\) under one unified generative model.
+    \end{block}
 \end{frame}
 
-\begin{frame}{Model Components: Matrix Formulation}
+\begin{frame}{Discrete Generative Model for POMDP -- Matrix Formulation}
+\[
+  P\bigl(\tilde o_{1:T},\,\tilde s_{1:T},\,\pi\bigr)
+    \;=\;P(\pi)\;P(s_1\mid\pi)\;\prod_{t=1}^T
+       \;P(o_t\mid s_t)\;P\bigl(s_t\mid s_{t-1},\pi\bigr)
+\]
+\medskip
 
+\begin{description}
+  \item[\(A\) – Likelihood]  
+    \(A_{o,s} = P(o_t = o\mid s_t = s)\)  
+    (how hidden state \(s\) generates observation \(o\))
+  \item[\(B^\pi\) – Transitions]  
+    \(B^\pi_{s',s} = P(s_t = s'\mid s_{t-1} = s,\;\pi)\)  
+    (dynamics under policy \(\pi\))
+  \item[\(D\) – Prior over initial state]  
+    \(D_{s} = P(s_1 = s)\)
+  \item[\(C\) – Prior preferences]  
+    \(C_{o}\propto \ln P(o_t = o)\)  
+    (encodes which outcomes are “desired”)
+  \item[\(P(\pi)\) – Prior over policies]  
+    Usually uniform or based on expected free‐energy under each \(\pi\).
+\end{description}
 \end{frame}
 
-\frame{Posterior Belief Updating}
-\frame{Policy Evaluation and Selection}
-\frame{Simulated Agent Setup}
-\frame{Exploring Agent Dynamics}
+% ——— Slide: Inference & action in discrete POMDP ———
+\begin{frame}{Active Inference on a Discrete POMDP}
+\textbf{Perception (state‑estimation):}  
+Minimize variational free energy \(F\) w.r.t. beliefs \(Q(s_{1:T}\!\mid\!\pi)\):
+\[
+  Q^*(s_{1:T}\!\mid\!\pi)
+  \;=\;\arg\min_{Q}\;F\bigl[Q,\,\tilde o;A,B^\pi,D\bigr]
+\]
+yields approximate posterior \(Q(s_t)\) as discussed previously.
+
+\medskip
+\textbf{Policy selection (planning):}  
+Minimize \emph{expected} free energy \(G(\pi)\) under each candidate \(\pi\),
+balancing
+\[
+  \underbrace{\mathbb{E}[\,\underbrace{-\ln P(o\mid s)}_{\text{extrinsic cost}}\,]}_{\text{risk}}
+  + 
+  \underbrace{\mathbb{E}[\,\underbrace{\ln Q(s\mid\pi) - \ln P(s\mid\pi)}_{\text{information gain}}\,]}_{\text{ambiguity / epistemic value}}
+\]
+Select  
+\(\displaystyle \pi^* = \arg\min_\pi G(\pi)\).
+
+\medskip
+\textbf{Action:} execute first action of \(\pi^*\), observe new \(o_{t+1}\), repeat inference.
+\end{frame}
+
+\begin{frame}{Linear Algebraic Form of Expected Free Energy (Eq. 4.10)}
+\begin{columns}[t]
+  \begin{column}{0.4\textwidth}
+    \[
+    \begin{aligned}
+    \pi_0 &= \sigma(-G) \\[6pt]
+    G_\pi &= H \, s_{\pi\tau} \;+\; o_{\pi\tau}^\top\,\varsigma_{\pi\tau} \\[4pt]
+    \varsigma_{\pi\tau} &= \ln o_{\pi\tau} \;-\; \ln C_\tau \\[4pt]
+    H &= -\mathrm{diag}\bigl(A_i \ln A_i\bigr) \\[4pt]
+    P(o_\tau \!\mid\! C) &= \mathrm{Cat}(C_\tau) \\[4pt]
+    Q(o_\tau \!\mid\! \pi) &= \mathrm{Cat}(o_{\pi\tau}),\quad o_{\pi\tau}=A\,s_{\pi\tau} \\[4pt]
+    Q(s_\tau \!\mid\! \pi) &= \mathrm{Cat}(s_{\pi\tau}) \\[4pt]
+    Q(s_\tau) &= \mathrm{Cat}(s_\tau),\quad s_\tau = \sum_{\pi} \pi\,s_{\pi\tau}
+    \end{aligned}
+    \]
+  \end{column}
+  \begin{column}{0.58\textwidth}
+    \begin{itemize}
+      \item \(\pi_0\): prior over policies via a softmax of negative expected free energy.  
+      \item \(G_\pi\): expected free energy decomposed into “ambiguity” \(H\,s\) and “risk” \(o^\top\varsigma\).  
+      \item \(\varsigma\): log–odds of predicted outcomes versus preferred outcomes.  
+      \item \(H\): entropy operator on likelihood \(A\).  
+      \item \(A\), \(B\), \(C\): likelihood, transition and preference matrices in categorical form.  
+      \item \(\mathrm{Cat}(\cdot)\): categorical distribution.  
+    \end{itemize}
+  \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Policy Encoding in Matrix Form}
+    \textbf{Policy as transition‐matrix sequence}
+    \begin{itemize}
+      \item A policy \(\pi\) is a sequence of actions \((a_1,\dots,a_T)\).
+      \item Each action \(a_t\) selects a transition matrix \(B^{a_t}\).
+      \item Under \(\pi\), the hidden‐state update:
+      \[
+        s_{\pi\,t}
+        = B^{a_t}\,s_{\pi,\,t-1},
+        \quad
+        B^\pi = B^{a_T}\cdots B^{a_1}.
+      \]
+      \item Predicted observation:
+      \[
+        o_{\pi\,t} = A\,s_{\pi\,t}.
+      \]
+    \end{itemize}
+\end{frame}
+
+% ——— Slide: Impact on Expected & Variational Free Energy ———
+\begin{frame}{Impact on Free‐Energy Equations}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \textbf{Expected Free Energy (4.10)}  
+    \[
+      G_\pi
+      = \sum_{t=1}^T
+        \bigl[H\,s_{\pi\,t}
+        + o_{\pi\,t}^\top(\ln o_{\pi\,t}-\ln C_t)\bigr]
+    \]
+    Policy prior:
+    \[
+      \pi_0(\pi)=\sigma(-G_\pi)
+    \]
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \textbf{Variational Free Energy (4.11)}  
+    \[
+      F(\pi)
+      = \sum_{t=1}^T
+        s_{\pi\,t}^\top\bigl(\ln s_{\pi\,t}
+        -\ln A\,o_t
+        -\ln B^{a_t}s_{\pi,t-1}\bigr)
+    \]
+    Note: each \(B^{a_t}\) plugs into the complexity–accuracy trade‐off.
+  \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Variational Free Energy under a Policy (Eq. 4.11)}
+\[
+\begin{aligned}
+F(\pi) &= \sum_{\tau} F_{\pi\tau}, \\[4pt]
+F_{\pi\tau}
+&= 
+s_{\pi\tau}^\top
+\Bigl(\ln s_{\pi\tau} - \ln A\,o_\tau - \ln B_\pi\,s_{\pi,\tau-1}\Bigr)
+\end{aligned}
+\tag{4.11}
+\]
+\begin{itemize}
+  \item \(F(\pi)\) is the variational free energy for policy \(\pi\), summing over all time steps.  
+  \item Each term \(F_{\pi\tau}\) combines “complexity” (\(\ln s\)) and “accuracy” (\(\ln A\,o\), \(\ln B\,s\)).  
+  \item Minimizing \(F(\pi)\) drives inference about the hidden‐state trajectories under \(\pi\).  
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Inference of Hidden‐State Beliefs}
+    \textbf{Gradient‐based update}
+    \[
+      s_{\pi\tau} \;=\;\sigma\bigl(v_{\pi\tau}\bigr), 
+      \qquad
+      \dot v_{\pi\tau}
+      = -\,\nabla_{s_{\pi\tau}}\,F_{\pi\tau}
+    \]
+    \[
+      \nabla_{s_{\pi\tau}}F_{\pi\tau}
+      = \ln s_{\pi\tau}
+        - \ln A\,o_{\tau}
+        - \ln B^{\pi}\,s_{\pi,\tau-1}
+        - \ln B^{\pi+1\,\top}\,s_{\pi,\tau+1}
+    \]
+    \begin{itemize}
+      \item Interpret \(v\) as log‑odds; gradient flow drives \(F\downarrow\).  
+      \item Softmax \(\sigma\) ensures \(\sum s_{\pi\tau}=1\).  
+      \item Analogy: like backprop in NN, but on free‑energy landscape.  
+    \end{itemize}
+\end{frame}
+
+% ——— Slide 2: Policy‐belief inference via softmax gradient ———
+\begin{frame}{Inference of Policy Beliefs}
+    \textbf{Gradient condition for optimal policy}
+    \[
+      \nabla_{\pi}F = 0
+      \;\Longrightarrow\;
+      \pi 
+      = \sigma\bigl(-\,G \;-\; F\bigr)
+    \]
+    \begin{itemize}
+      \item \(G\): expected free energy (future‑directed cost).
+      \item \(F\): variational free energy (past/present fit). 
+    \end{itemize}
+    \centering
+    \vspace{1em}
+    \begin{tikzpicture}[scale=0.8]
+      \node[draw, circle] (G) at (0,1) {\(-G\)};
+      \node[draw, circle] (F) at (0,-1) {\(-F\)};
+      \node[draw, rectangle] (sum) at (2,0) {\(-G - F\)};
+      \node[draw, circle, right=of sum] (pi) {\(\pi\)};
+      \draw[->] (G) -- (sum);
+      \draw[->] (F) -- (sum);
+      \draw[->] (sum) -- (pi) node[midway,above]{\(\sigma\)};
+    \end{tikzpicture}
+\end{frame}
 
 \section{Conclusion and Outlook}
 \begin{frame}{Conclusion and Outlook}
     \sectionpage
 \end{frame}
 
-\frame{Recap: Core Ideas}
-\frame{What Active Inference Explains}
-\frame{Future Directions and Open Questions}
-\frame{Questions and Discussion}
+\begin{frame}{Recap: Core Ideas}
+    
+\end{frame}
+
+\begin{frame}{What Active Inference Explains}
+\end{frame}
+
+\begin{frame}{Future Directions and Open Questions}
+\end{frame}
+
+\begin{frame}{Questions and Discussion}
+\end{frame}
 
 \begin{frame}{Bibliography}
 \bibliography{bibliography}{}

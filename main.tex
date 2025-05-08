@@ -722,7 +722,7 @@ Surprise upper bound \footnote{Image from \cite{active-inference-book}}
         \;\bigm|\;
         \mathcal{S}
         \quad\Longleftrightarrow\quad
-        \text{all paths between \(x_i\) and \(x_j\) are goes through }\mathcal{S}.
+        \text{all paths between \(x_i\) and \(x_j\) go through }\mathcal{S}.
       \]
     \end{itemize}
 \end{frame}
@@ -739,9 +739,10 @@ Surprise upper bound \footnote{Image from \cite{active-inference-book}}
 \begin{frame}{POMDP in Active Inference}
   \textbf{Dynamic generative model:} Partially-Observable Markov Decision Process (POMDP)
   \[
-    p(s_{1:T},o_{1:T},\pi)
-      \;=\; p(\pi)\,\prod_{t=1}^T p(s_t \mid s_{t-1},\pi)\,p(o_t\mid s_t)
-  \]
+  P\bigl(\tilde o_{1:T},\,\tilde s_{1:T},\,\pi\bigr)
+    \;=\;P(\pi)\;P(s_1\mid\pi)\;\prod_{t=1}^T
+       \;P(o_t\mid s_t)\;P\bigl(s_t\mid s_{t-1},\pi\bigr)
+\]
   \medskip
   \begin{itemize}
     \item \(\mathbf{s_t}\): hidden state at time \(t\)  
@@ -780,7 +781,7 @@ Surprise upper bound \footnote{Image from \cite{active-inference-book}}
     \(C_{o}\propto \ln P(o_t = o)\)  
     (encodes which outcomes are “desired”)
   \item[\(P(\pi)\) – Prior over policies]  
-    Usually uniform or based on expected free‐energy under each \(\pi\).
+    Usually uniform or based on expected free‐energy under each \(\pi\). \cite{active-inference-tutorial}
 \end{description}
 \end{frame}
 
@@ -810,7 +811,7 @@ Select
 \textbf{Action:} execute first action of \(\pi^*\), observe new \(o_{t+1}\), repeat inference.
 \end{frame}
 
-\begin{frame}{Linear Algebraic Form of Expected Free Energy (Eq. 4.10)}
+\begin{frame}{Linear Algebraic Form of Expected Free Energy}
 \begin{columns}[t]
   \begin{column}{0.4\textwidth}
     \[
@@ -858,47 +859,18 @@ Select
     \end{itemize}
 \end{frame}
 
-% ——— Slide: Impact on Expected & Variational Free Energy ———
-\begin{frame}{Impact on Free‐Energy Equations}
-\begin{columns}[t]
-  \begin{column}{0.48\textwidth}
-    \textbf{Expected Free Energy (4.10)}  
+\begin{frame}{Variational Free Energy under a Policy}
+\begin{block}{Free energy under a policy}
     \[
-      G_\pi
-      = \sum_{t=1}^T
-        \bigl[H\,s_{\pi\,t}
-        + o_{\pi\,t}^\top(\ln o_{\pi\,t}-\ln C_t)\bigr]
+    \begin{aligned}
+        F(\pi) &= \sum_{\tau} F_{\pi\tau}, \\[4pt]
+        F_{\pi\tau}
+        &= 
+        s_{\pi\tau}^\top
+        \Bigl(\ln s_{\pi\tau} - \ln A\,o_\tau - \ln B_\pi\,s_{\pi,\tau-1}\Bigr)
+    \end{aligned}
     \]
-    Policy prior:
-    \[
-      \pi_0(\pi)=\sigma(-G_\pi)
-    \]
-  \end{column}
-  \begin{column}{0.48\textwidth}
-    \textbf{Variational Free Energy (4.11)}  
-    \[
-      F(\pi)
-      = \sum_{t=1}^T
-        s_{\pi\,t}^\top\bigl(\ln s_{\pi\,t}
-        -\ln A\,o_t
-        -\ln B^{a_t}s_{\pi,t-1}\bigr)
-    \]
-    Note: each \(B^{a_t}\) plugs into the complexity–accuracy trade‐off.
-  \end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Variational Free Energy under a Policy (Eq. 4.11)}
-\[
-\begin{aligned}
-F(\pi) &= \sum_{\tau} F_{\pi\tau}, \\[4pt]
-F_{\pi\tau}
-&= 
-s_{\pi\tau}^\top
-\Bigl(\ln s_{\pi\tau} - \ln A\,o_\tau - \ln B_\pi\,s_{\pi,\tau-1}\Bigr)
-\end{aligned}
-\tag{4.11}
-\]
+\end{block}
 \begin{itemize}
   \item \(F(\pi)\) is the variational free energy for policy \(\pi\), summing over all time steps.  
   \item Each term \(F_{\pi\tau}\) combines “complexity” (\(\ln s\)) and “accuracy” (\(\ln A\,o\), \(\ln B\,s\)).  
@@ -954,22 +926,48 @@ s_{\pi\tau}^\top
     \end{tikzpicture}
 \end{frame}
 
+\begin{frame}{Applications and Key Results}
+    \textbf{Behavioral Modeling}  
+    \begin{itemize}
+      \item Discrete POMDPs can be used to predict human choices in explore–exploit tasks.
+    \end{itemize}
+    \textbf{Toolkits}  
+    \begin{itemize}
+      \item Python “pymdp” library can be used to develop active inference agents.
+    \end{itemize}
+    \textbf{Domains}  
+    \begin{itemize}
+      \item Neuroscience, RL exploration.
+    \end{itemize}
+\end{frame}
+
 \section{Conclusion and Outlook}
 \begin{frame}{Conclusion and Outlook}
     \sectionpage
 \end{frame}
 
 \begin{frame}{Recap: Core Ideas}
-    
+\begin{itemize}
+  \item \textbf{Active Inference:} A framework for perception, action, and learning via variational inference on a generative model.
+  \item \textbf{Expected Free Energy (G):} Drives policy selection by minimizing surprise—balances epistemic (uncertainty-reducing) and pragmatic (goal-directed) value.
+  \item \textbf{Policies as Sequences:} Represented by sequences of future hidden states; evaluated probabilistically.
+  \item \textbf{Discrete Models:} Use of discrete states, observations, and actions, enabling tractable inference.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{What Active Inference Explains}
+\begin{itemize}
+  \item \textbf{Perception–Action Coupling:} Unified account of how organisms infer both hidden states and actions.
+  \item \textbf{Exploration–Exploitation:} Emerges naturally from minimizing uncertainty and maximizing reward in G.
+  \item \textbf{Neurobiological Plausibility:} Predictive coding and synaptic updates have plausible neural correlates which can be connected with the elements of the active inference model.
+  \item \textbf{Behavioral Anomalies:} Captures suboptimal behavior as rational under uncertain models or biased priors.
+\end{itemize}
 \end{frame}
 
-\begin{frame}{Future Directions and Open Questions}
-\end{frame}
-
-\begin{frame}{Questions and Discussion}
+\begin{frame}{Questions}
+    \centering
+    \Huge
+    Questions?
 \end{frame}
 
 \begin{frame}{Bibliography}
